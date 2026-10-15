@@ -11,28 +11,14 @@ jobs:
       - name: Install Native Build Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc-multilib clang lld llvm nasm
+          sudo apt-get install -y build-essential gcc-multilib
 
-      - name: Compile Required Pre-Requisite Libraries
+      - name: Execute Standalone Compilation
         run: |
-          # 1. Grant execution permissions to the native build scripts
-          chmod +x ./build_bearssl.sh ./build_isal_crypto.sh ./build_libtomcrypt.sh
-          
-          # 2. Compile the three required background cryptographic engines natively
-          ./build_bearssl.sh
-          ./build_isal_crypto.sh
-          ./build_libtomcrypt.sh
-
-      - name: Execute Final Makefile Compilation
-        run: |
-          # Now that the library files exist, run the primary builder
           make
-          
+
       - name: Upload Compiled Binary to GitHub
         uses: actions/upload-artifact@v4
         with:
           name: Custom-Kstuff-13.60-Binary
-          path: |
-            kstuff.bin
-            payload.bin
-            *.bin
+          path: kstuff.bin
