@@ -1,0 +1,21 @@
+name: Compile Custom 13.60 Payload
+on: [push, workflow_dispatch]
+
+jobs:
+  build-bin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Run PS5 SDK Compiler Container
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/build" -w /build ghcr.io/ps5dev/ps5-payload-sdk:latest make
+
+      - name: Upload Compiled Binary to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: Custom-Kstuff-13.60-Binary
+          path: |
+            kstuff.bin
+            payload.bin
