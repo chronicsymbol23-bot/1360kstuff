@@ -1,24 +1,24 @@
-name: Compile Custom 13.60 Payload
-on: [push, workflow_dispatch]
+#include <stdint.h>
 
-jobs:
-  build-bin:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
+// 13.60 Kernel Privilege Verification Patch Entry Point
+void init_1360_fpkg_bypass(void) {
+    // Define the absolute kernel base address register target
+    // In bare-metal payloads, we use a fixed fallback pointer handle 
+    // or calculate the structural register space directly.
+    uint64_t patch_address = 0x001e0e0a7;
 
-      - name: Install Native Build Tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential gcc-multilib
-
-      - name: Execute Standalone Compilation
-        run: |
-          make
-
-      - name: Upload Compiled Binary to GitHub
-        uses: actions/upload-artifact@v4
-        with:
-          name: Custom-Kstuff-13.60-Binary
-          path: kstuff.bin
+    // Pure Inline Assembly: Clears CR0 Write-Protect bit, injects success bytes, restores CR0
+    __asm__ volatile(
+        "mov %%cr0, %%rax\n"
+        "mov %%rax, %%rdx\n"
+        "and $0xfffffffffffeffff, %%rax\n"
+        "mov %%rax, %%cr0\n"
+        "movb $0x31, (%0)\n"
+        "movb $0xC0, 1(%0)\n"
+        "movb $0xC3, 2(%0)\n"
+        "mov %%rdx, %%cr0\n"
+        :
+        : "r"(patch_address)
+        : "rax", "rdx", "memory"
+    );
+}
